@@ -1,17 +1,20 @@
-defmodule PublicSuffix.Mixfile do
+defmodule PublicSufx.Mixfile do
   use Mix.Project
+
+  @version "0.5.0"
+  @source_url "https://github.com/reisub/public_sufx"
 
   def project do
     [
-      app: :public_suffix,
-      version: "0.6.0",
-      elixir: "~> 1.14",
-      build_embedded: Mix.env() == :prod,
+      app: :public_sufx,
+      version: @version,
+      elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
-      aliases: aliases(),
       description: description(),
       package: package(),
-      deps: deps()
+      docs: docs(),
+      deps: deps(),
+      aliases: aliases()
     ]
   end
 
@@ -27,12 +30,13 @@ defmodule PublicSuffix.Mixfile do
 
   defp deps do
     [
-      {:idna, ">= 1.2.0 and < 7.0.0", runtime: false},
-      # ex_doc and earmark are necessary to publish docs to hexdocs.pm.
-      {:ex_doc, ">= 0.0.0", only: :dev},
-      {:earmark, ">= 0.0.0", only: :dev}
+      {:idna, "~> 6.1"},
+      {:ex_doc, ">= 0.0.0", only: [:dev, :test], runtime: false},
+      {:doctor, "~> 0.22.0", only: [:dev, :test]}
     ]
   end
+
+  defp aliases, do: []
 
   defp description do
     """
@@ -43,13 +47,14 @@ defmodule PublicSuffix.Mixfile do
   defp package do
     [
       licenses: ["MIT"],
-      maintainers: ["Myron Marston", "Ben Kirzhner"],
       links: %{
-        "GitHub" => "https://github.com/seomoz/publicsuffix-elixir",
+        "GitHub" => @source_url,
+        "Changelog" => "https://hexdocs.pm/public_sufx/changelog.html",
         "Public Suffix List" => "https://publicsuffix.org/"
       },
       files: [
-        "lib",
+        "lib/public_sufx",
+        "lib/public_sufx.ex",
         "data/public_suffix_list.dat",
         "mix.exs",
         "README.md",
@@ -59,49 +64,15 @@ defmodule PublicSuffix.Mixfile do
     ]
   end
 
-  defp aliases do
+  defp docs do
     [
-      "hex.publish": ["hex.publish", &tag_version/1]
+      main: "readme",
+      source_url: @source_url,
+      source_ref: "v#{@version}",
+      extras: [
+        "README.md",
+        "CHANGELOG.md"
+      ]
     ]
-  end
-
-  defp tag_version(_args) do
-    version = Keyword.fetch!(project(), :version)
-    System.cmd("git", ["tag", "-a", "-m", "Version #{version}", "v#{version}"])
-    System.cmd("git", ["push", "origin"])
-    System.cmd("git", ["push", "origin", "--tags"])
-  end
-end
-
-defmodule Mix.Tasks.PublicSuffix.SyncFiles do
-  use Mix.Task
-
-  @shortdoc "Syncs the files from publicsuffix.org"
-  @data_dir Path.expand("data", __DIR__)
-
-  def run(_) do
-    File.mkdir_p!(@data_dir)
-    sync_file("https://publicsuffix.org/list/public_suffix_list.dat", "public_suffix_list.dat")
-
-    sync_file(
-      "https://raw.githubusercontent.com/publicsuffix/list/master/tests/tests.txt",
-      "tests.txt"
-    )
-  end
-
-  defp sync_file(remote_url, local_path) do
-    local_path = Path.join(@data_dir, local_path)
-
-    [
-      "curl",
-      "-s",
-      remote_url,
-      "--output",
-      local_path
-    ]
-    |> Enum.join(" ")
-    |> Mix.shell().cmd
-
-    IO.puts("Synced #{remote_url} to #{local_path}")
   end
 end

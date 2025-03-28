@@ -1,4 +1,4 @@
-defmodule PublicSuffix.TestCaseGenerator do
+defmodule PublicSufx.TestCaseGenerator do
   @data_dir Path.expand("../data", __DIR__)
   @header_line_count 2
 
@@ -66,9 +66,9 @@ defmodule PublicSuffix.TestCaseGenerator do
   end
 end
 
-defmodule PublicSuffixGeneratedCasesTest do
+defmodule PublicSufxGeneratedCasesTest do
   use ExUnit.Case
-  import PublicSuffix
+  import PublicSufx
 
   test_name = fn test_case, fun_name, output_field ->
     output = Map.fetch!(test_case, output_field)
@@ -87,19 +87,15 @@ defmodule PublicSuffixGeneratedCasesTest do
     end
   end
 
-  for test_case <- PublicSuffix.TestCaseGenerator.test_cases(), test_case.input do
+  for test_case <- PublicSufx.TestCaseGenerator.test_cases(), test_case.input do
     @test_case test_case
     # the test file has some commented out tests.
-    should_skip? = String.starts_with?(test_case.input || "", "//")
+    enabled? = !String.starts_with?(test_case.input || "", "//")
 
-    @tag skip: should_skip?
-    test test_name.(test_case, "registrable_domain", :registrable_domain_output) do
-      assert registrable_domain(@test_case.input) == @test_case.registrable_domain_output
-    end
-
-    @tag skip: should_skip?
-    test test_name.(test_case, "public_suffix", :public_suffix_output) do
-      assert public_suffix(@test_case.input) == @test_case.public_suffix_output
+    if enabled? do
+      test test_name.(test_case, "public_suffix", :public_suffix_output) do
+        assert public_suffix(@test_case.input) == @test_case.public_suffix_output
+      end
     end
   end
 end
