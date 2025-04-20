@@ -63,7 +63,7 @@ end
 
 ## Configuration
 
-`PublicSufx` also bundled with a cached copy of the public suffix list from
+`PublicSufx` is bundled with a cached copy of the public suffix list from
 publicsuffix.org and can be configured to download a fresh copy of the list
 on compilation by adding this in your `config.exs`:
 
