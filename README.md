@@ -56,21 +56,19 @@ The package can be installed by adding `public_sufx` to your list of dependencie
 ```elixir
 def deps do
   [
-    {:public_sufx, "~> 0.5.0"}
+    {:public_sufx, "~> 0.6.0"}
   ]
 end
 ```
 
 ## Configuration
 
-`PublicSufx` downloads a fresh copy of the public suffix list at compile time.
-
-It's also bundled with a cached copy of the public suffix list from
-and can be configured not to download a fresh copy of the list
-by adding this in your `config.exs`:
+`PublicSufx` also bundled with a cached copy of the public suffix list from
+publicsuffix.org and can be configured to download a fresh copy of the list
+on compilation by adding this in your `config.exs`:
 
 ```elixir
-config :public_sufx, download_data_on_compile: false
+config :public_sufx, download_data_on_compile: true
 ```
 
 There are pros and cons to both approaches; which you choose will depend
