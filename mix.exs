@@ -8,7 +8,7 @@ defmodule PublicSufx.Mixfile do
     [
       app: :public_sufx,
       version: @version,
-      elixir: "~> 1.15",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
