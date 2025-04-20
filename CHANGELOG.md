@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `download_data_on_compile` is now false by default, see [reasons](https://github.com/reisub/public_sufx/issues/1)
 - support Elixir 1.14
+- upate cached rules list
 
 ## [0.5.0] - 2025-04-09
 
