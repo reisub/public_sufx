@@ -20,7 +20,7 @@ jobs:
               otp: "24.3.4.10"
           - pair:
               elixir: "1.18.3"
-              otp: "27.3"
+              otp: "27.3.3"
     env:
       MIX_ENV: test
     steps:
