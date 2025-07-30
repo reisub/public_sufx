@@ -18,7 +18,7 @@ new_version=`mix run -e "IO.puts(PublicSufx.Mixfile.project()[:version])"`
 if [ "$new_version" != "$current_version" ]; then
   git add .
   git commit -m "Update public suffix list"
-  git push --set-upstream origin outdated
+  git push --force --set-upstream origin outdated
 
   if [[ $(check_pr) == "" ]]; then
     gh pr create --fill --label "outdated check"
