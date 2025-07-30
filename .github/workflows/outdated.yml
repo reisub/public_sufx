@@ -3,6 +3,7 @@ name: Outdated
 on:
   schedule:
     - cron: '15 6 10 * *'
+  workflow_dispatch:
 
 jobs:
   outdated:
