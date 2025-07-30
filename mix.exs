@@ -1,13 +1,13 @@
 defmodule PublicSufx.Mixfile do
   use Mix.Project
 
-  @version "0.6.0"
+  @minor_version "0.6"
   @source_url "https://github.com/reisub/public_sufx"
 
   def project do
     [
       app: :public_sufx,
-      version: @version,
+      version: version(),
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -68,11 +68,34 @@ defmodule PublicSufx.Mixfile do
     [
       main: "readme",
       source_url: @source_url,
-      source_ref: "v#{@version}",
+      source_ref: "v#{version()}",
       extras: [
         "README.md",
         "CHANGELOG.md"
       ]
     ]
+  end
+
+  defp version do
+    version_date =
+      "data/public_suffix_list.dat"
+      |> File.stream!()
+      |> Enum.find_value(fn line ->
+        case String.trim(line) do
+          "// VERSION: " <>
+              <<year::binary-size(4), "-", month::binary-size(2), "-", day::binary-size(2), "_",
+                _rest::binary>> ->
+            year <> month <> day
+
+          _ ->
+            nil
+        end
+      end)
+
+    if version_date == nil do
+      raise "version extraction failed"
+    end
+
+    "#{@minor_version}.#{version_date}"
   end
 end

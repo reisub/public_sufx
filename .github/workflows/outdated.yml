@@ -1,0 +1,26 @@
+name: Outdated
+
+on:
+  schedule:
+    - cron: '15 6 10 * *'
+
+jobs:
+  outdated:
+    name: Check outdated
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Erlang & Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: 28.0.2
+          elixir-version: 1.18.4
+
+      - name: Check outdated public suffix list
+        run: |
+          mix deps.get
+          mix compile
+          .github/workflows/outdated.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
