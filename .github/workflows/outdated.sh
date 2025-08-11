@@ -21,6 +21,6 @@ if [ "$new_version" != "$current_version" ]; then
   git push --force --set-upstream origin outdated
 
   if [[ $(check_pr) == "" ]]; then
-    gh pr create --fill --label "outdated check"
+    gh pr create --fill --label "outdated check" --assignee reisub
   fi
 fi
