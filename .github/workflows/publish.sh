@@ -9,7 +9,7 @@ git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
 version=`mix run -e "IO.puts(PublicSufx.Mixfile.project()[:version])"`
 
-if [ $(git tag -l "v$version") ]; then
+if git rev-parse "v$version" >/dev/null 2>&1; then
   echo "NOT TAGGING"
 else
   echo "TAGGING"
