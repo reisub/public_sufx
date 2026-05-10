@@ -1,14 +1,14 @@
 defmodule PublicSufx.Mixfile do
   use Mix.Project
 
-  @minor_version "0.6"
+  @minor_version "0.7"
   @source_url "https://github.com/reisub/public_sufx"
 
   def project do
     [
       app: :public_sufx,
       version: version(),
-      elixir: "~> 1.14",
+      elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
