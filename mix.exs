@@ -30,7 +30,7 @@ defmodule PublicSufx.Mixfile do
 
   defp deps do
     [
-      {:idna, "~> 6.1"},
+      {:idna, "~> 7.1"},
       {:ex_doc, ">= 0.0.0", only: [:dev, :test], runtime: false},
       {:doctor, "~> 0.22.0", only: [:dev, :test]}
     ]
