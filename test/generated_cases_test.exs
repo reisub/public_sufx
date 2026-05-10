@@ -68,6 +68,7 @@ end
 
 defmodule PublicSufxGeneratedCasesTest do
   use ExUnit.Case
+
   import PublicSufx
 
   test_name = fn test_case, fun_name, output_field ->

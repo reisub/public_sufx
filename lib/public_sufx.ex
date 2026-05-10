@@ -1,9 +1,9 @@
 defmodule PublicSufx do
-  import PublicSufx.RulesParser
-
   @moduledoc """
   Implements the publicsuffix algorithm described at https://publicsuffix.org/list/.
   """
+
+  import PublicSufx.RulesParser
 
   @data_file Path.expand("../data/public_suffix_list.dat", __DIR__)
   @external_resource @data_file
@@ -139,12 +139,10 @@ defmodule PublicSufx do
         {:exception, labels} -> tl(labels)
         {:normal, labels} -> labels
       end
-      |> length
+      |> length()
 
     if length(labels) >= num_labels do
       take_last_n(labels, num_labels)
-    else
-      nil
     end
   end
 

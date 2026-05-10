@@ -1,9 +1,9 @@
 defmodule Mix.Tasks.PublicSufx.SyncFiles do
-  use Mix.Task
-
+  @shortdoc "Syncs the files from publicsuffix.org"
   @moduledoc false
 
-  @shortdoc "Syncs the files from publicsuffix.org"
+  use Mix.Task
+
   @data_dir Path.expand("../../data", __DIR__)
 
   def run(_) do

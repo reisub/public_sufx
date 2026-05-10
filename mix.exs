@@ -31,8 +31,11 @@ defmodule PublicSufx.Mixfile do
   defp deps do
     [
       {:idna, "~> 7.1"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:doctor, "~> 0.22.0", only: [:dev, :test]},
       {:ex_doc, ">= 0.0.0", only: [:dev, :test], runtime: false},
-      {:doctor, "~> 0.22.0", only: [:dev, :test]}
+      {:jump_credo_checks, "~> 0.2", only: [:dev], runtime: false},
+      {:quokka, "~> 2.12", only: [:dev, :test], runtime: false}
     ]
   end
 
@@ -83,8 +86,7 @@ defmodule PublicSufx.Mixfile do
       |> Enum.find_value(fn line ->
         case String.trim(line) do
           "// VERSION: " <>
-              <<year::binary-size(4), "-", month::binary-size(2), "-", day::binary-size(2), "_",
-                _rest::binary>> ->
+              <<year::binary-size(4), "-", month::binary-size(2), "-", day::binary-size(2), "_", _rest::binary>> ->
             year <> month <> day
 
           _ ->

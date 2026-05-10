@@ -29,10 +29,10 @@ defmodule PublicSufx.RulesParser do
             punycode_rule = parse_rule(punycode_domain(rule_str))
 
             rules_tuple =
-              if punycode_rule != rule do
-                put_rule(rules_tuple, current_ruleset, punycode_rule)
-              else
+              if punycode_rule == rule do
                 rules_tuple
+              else
+                put_rule(rules_tuple, current_ruleset, punycode_rule)
               end
 
             {current_ruleset, rules_tuple}

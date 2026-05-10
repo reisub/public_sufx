@@ -1,6 +1,8 @@
 defmodule PublicSufx.PublicSufxTest do
   use ExUnit.Case
+
   import PublicSufx
+
   doctest PublicSufx
 
   test_cases_prevailing_private = [
