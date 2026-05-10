@@ -1,14 +1,14 @@
 defmodule PublicSufx.Mixfile do
   use Mix.Project
 
-  @minor_version "0.6"
+  @minor_version "0.7"
   @source_url "https://github.com/reisub/public_sufx"
 
   def project do
     [
       app: :public_sufx,
       version: version(),
-      elixir: "~> 1.14",
+      elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
@@ -30,9 +30,12 @@ defmodule PublicSufx.Mixfile do
 
   defp deps do
     [
-      {:idna, "~> 6.1"},
+      {:idna, "~> 7.1"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:doctor, "~> 0.22.0", only: [:dev, :test]},
       {:ex_doc, ">= 0.0.0", only: [:dev, :test], runtime: false},
-      {:doctor, "~> 0.22.0", only: [:dev, :test]}
+      {:jump_credo_checks, "~> 0.2", only: [:dev], runtime: false},
+      {:quokka, "~> 2.12", only: [:dev, :test], runtime: false}
     ]
   end
 
@@ -83,8 +86,7 @@ defmodule PublicSufx.Mixfile do
       |> Enum.find_value(fn line ->
         case String.trim(line) do
           "// VERSION: " <>
-              <<year::binary-size(4), "-", month::binary-size(2), "-", day::binary-size(2), "_",
-                _rest::binary>> ->
+              <<year::binary-size(4), "-", month::binary-size(2), "-", day::binary-size(2), "_", _rest::binary>> ->
             year <> month <> day
 
           _ ->
