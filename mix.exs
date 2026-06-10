@@ -32,8 +32,9 @@ defmodule PublicSufx.Mixfile do
     [
       {:idna, "~> 7.1"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:doctor, "~> 0.22.0", only: [:dev, :test]},
+      {:doctor, "~> 0.23.0", only: [:dev, :test]},
       {:ex_doc, ">= 0.0.0", only: [:dev, :test], runtime: false},
+      {:ex_slop, "~> 0.4", only: [:dev, :test], runtime: false},
       {:jump_credo_checks, "~> 0.2", only: [:dev], runtime: false},
       {:quokka, "~> 2.12", only: [:dev, :test], runtime: false}
     ]

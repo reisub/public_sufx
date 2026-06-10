@@ -9,11 +9,11 @@ git config user.name "$GITHUB_ACTOR"
 git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 git checkout outdated || git checkout -b outdated
 
-current_version=`mix run -e "IO.puts(PublicSufx.Mixfile.project()[:version])"`
+current_version=$(mix run -e "IO.puts(PublicSufx.Mixfile.project()[:version])")
 
 mix public_sufx.sync_files
 
-new_version=`mix run -e "IO.puts(PublicSufx.Mixfile.project()[:version])"`
+new_version=$(mix run -e "IO.puts(PublicSufx.Mixfile.project()[:version])")
 
 if [ "$new_version" != "$current_version" ]; then
   git add .
