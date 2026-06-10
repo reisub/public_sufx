@@ -5,16 +5,25 @@ on:
     - cron: '15 6 10 * *'
   workflow_dispatch:
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   outdated:
     name: Check outdated
     runs-on: ubuntu-latest
     steps:
+      # The default GITHUB_TOKEN doesn't trigger workflows on the PRs it
+      # creates, so CI would never run on them. Use a GitHub App token instead.
+      - name: Mint GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Install Erlang & Elixir
         uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.24.0
@@ -28,4 +37,4 @@ jobs:
           mix compile
           .github/workflows/outdated.sh
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
