@@ -56,7 +56,7 @@ The package can be installed by adding `public_sufx` to your list of dependencie
 ```elixir
 def deps do
   [
-    {:public_sufx, "~> 0.6.0"}
+    {:public_sufx, "~> 0.7.0"}
   ]
 end
 ```
