@@ -16,16 +16,19 @@ concurrency:
 jobs:
   test:
     name: OTP ${{matrix.pair.otp}} / Elixir ${{matrix.pair.elixir}}
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.os}}
     strategy:
       matrix:
         include:
           - pair:
               elixir: "1.15.0"
-              otp: "24.3.4.10"
+              otp: "25.3.2.21"
+            # builds.hex.pm has no OTP 25 builds for newer Ubuntu releases
+            os: ubuntu-24.04
           - pair:
-              elixir: "1.20.1"
-              otp: "29.0.2"
+              elixir: "1.20.5"
+              otp: "29.1.2"
+            os: ubuntu-latest
     env:
       MIX_ENV: test
     steps:
