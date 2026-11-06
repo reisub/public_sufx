@@ -65,7 +65,7 @@ defmodule PublicSufx.RulesParser do
 
   @doc false
   # We can only convert domain's to punycode so do not pass through operators
-  def punycode_domain("*" <> rule), do: "*" <> punycode_domain(rule)
+  def punycode_domain("*." <> rule), do: "*." <> punycode_domain(rule)
   def punycode_domain("!" <> rule), do: "!" <> punycode_domain(rule)
 
   def punycode_domain(rule) do
@@ -74,6 +74,20 @@ defmodule PublicSufx.RulesParser do
     |> :idna.encode(uts46: true)
     |> to_string()
   end
+
+  @doc false
+  # The most labels any rule can match, counting a wildcard as a label.
+  def max_rule_labels(rules) do
+    for {_ruleset, rules_by_type} <- rules,
+        {type, domains} <- rules_by_type,
+        labels <- domains,
+        reduce: 1 do
+      max_labels -> max(max_labels, rule_length(type, labels))
+    end
+  end
+
+  defp rule_length(:wildcard, labels), do: length(labels) + 1
+  defp rule_length(_type, labels), do: length(labels)
 
   # "A domain or rule can be split into a list of labels using the separator "." (dot)."
   defp domain_labels(domain), do: String.split(domain, ".")
