@@ -1,7 +1,7 @@
 defmodule PublicSufx.Mixfile do
   use Mix.Project
 
-  @minor_version "0.7"
+  @minor_version "0.8"
   @source_url "https://github.com/reisub/public_sufx"
 
   def project do

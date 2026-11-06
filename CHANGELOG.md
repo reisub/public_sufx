@@ -6,6 +6,21 @@ Releases that update only the public suffix list won't be listed in the changelo
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- `public_suffix?/1` canonicalizes its input like `public_suffix/1` does, so upper-case letters, a trailing dot, IDNA dot variants (`。`, `．`, `｡`) and non-NFC Unicode no longer make a public suffix look like a regular domain
+- Matching takes linear time; it used to take quadratic time, so a long input could take seconds
+- `download_data_on_compile` verifies the server certificate on OTP 25 (which doesn't by default), times out instead of hanging, and refuses an incomplete download
+- Wildcard rules no longer add bogus rules such as `*ck`
+
+### Changed
+
+- OTP 25 is now the minimum supported version
+- A trailing dot is ignored: `public_suffix("foo.github.io.")` returns `"github.io"` instead of `""`
+- Inputs longer than 4096 bytes or with invalid UTF-8 are invalid: `public_suffix/1` and `prevailing_rule/1` return `nil` and `public_suffix?/1` returns `false`
+
 ## [0.7.20260507] - 2026-05-10
 
 ### Changed
