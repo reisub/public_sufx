@@ -16,25 +16,19 @@ jobs:
       # creates, so CI would never run on them. Use a GitHub App token instead.
       - name: Mint GitHub App token
         id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
           client-id: ${{ vars.APP_CLIENT_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Install Erlang & Elixir
-        uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
-        with:
-          version-file: mise.toml
-          version-type: strict
-
+      # Runs no Elixir, so no third-party code ever runs next to the App token.
       - name: Check outdated public suffix list
-        run: |
-          mix deps.get
-          mix compile
-          .github/workflows/outdated.sh
+        run: .github/workflows/outdated.sh
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}

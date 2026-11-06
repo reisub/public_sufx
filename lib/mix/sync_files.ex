@@ -4,31 +4,13 @@ defmodule Mix.Tasks.PublicSufx.SyncFiles do
 
   use Mix.Task
 
-  @data_dir Path.expand("../../data", __DIR__)
+  # The outdated workflow runs the script directly, so it doesn't need Elixir.
+  @script Path.expand("../../.github/workflows/sync_files.sh", __DIR__)
 
   def run(_) do
-    File.mkdir_p!(@data_dir)
-    sync_file("https://publicsuffix.org/list/public_suffix_list.dat", "public_suffix_list.dat")
-
-    sync_file(
-      "https://raw.githubusercontent.com/publicsuffix/list/master/tests/tests.txt",
-      "tests.txt"
-    )
-  end
-
-  defp sync_file(remote_url, local_path) do
-    local_path = Path.join(@data_dir, local_path)
-
-    [
-      "curl",
-      "-s",
-      remote_url,
-      "--output",
-      local_path
-    ]
-    |> Enum.join(" ")
-    |> Mix.shell().cmd
-
-    IO.puts("Synced #{remote_url} to #{local_path}")
+    case System.cmd(@script, [], into: IO.stream(), stderr_to_stdout: true) do
+      {_, 0} -> :ok
+      {_, status} -> Mix.raise("#{@script} failed with exit status #{status}")
+    end
   end
 end
