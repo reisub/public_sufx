@@ -93,3 +93,6 @@ jobs:
 
       - name: Run Credo
         run: mix credo --strict
+
+      - name: Check version script matches mix.exs
+        run: test "$(.github/workflows/version.sh)" = "$(mix run --no-start -e 'IO.puts(Mix.Project.config()[:version])')"
