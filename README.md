@@ -31,6 +31,22 @@ iex(2)> PublicSufx.public_suffix?("co.uk")
 true
 ```
 
+Domains are canonicalized before matching, so case, a trailing dot,
+Unicode normalization forms and IDNA dot variants (`。`, `．`, `｡`) don't
+change the result:
+
+```iex
+iex(1)> PublicSufx.public_suffix?("GitHub.io.")
+true
+iex(2)> PublicSufx.public_suffix("foo。github。io")
+"github.io"
+```
+
+Input that can't be a domain name (a leading dot, more than 4096 bytes or
+invalid UTF-8) returns `nil`, and `public_suffix?/1` returns `false` for it.
+If you use `public_suffix?/1` to reject public suffixes, validate the
+hostname as well.
+
 The publicsuffix.org data file contains both official ICANN records
 and private records:
 
@@ -56,10 +72,12 @@ The package can be installed by adding `public_sufx` to your list of dependencie
 ```elixir
 def deps do
   [
-    {:public_sufx, "~> 0.7.0"}
+    {:public_sufx, "~> 0.8.0"}
   ]
 end
 ```
+
+`PublicSufx` requires Elixir 1.15 or later and OTP 26 or later.
 
 ## Configuration
 

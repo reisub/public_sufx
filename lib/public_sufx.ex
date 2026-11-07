@@ -1,6 +1,11 @@
 defmodule PublicSufx do
   @moduledoc """
   Implements the publicsuffix algorithm described at https://publicsuffix.org/list/.
+
+  Domains are canonicalized before matching: they are NFKC-normalized and
+  lower-cased, the IDNA dot variants (`。`, `．` and `｡`) separate labels like
+  `.` does, and a trailing dot is ignored. Domains that start with a dot, are
+  longer than 4096 bytes or aren't valid UTF-8 are invalid input.
   """
 
   import PublicSufx.RulesParser
@@ -14,6 +19,15 @@ defmodule PublicSufx do
 
       case __MODULE__.RemoteFileFetcher.fetch_remote_file(@public_suffix_list_url) do
         {:ok, data} ->
+          # The private domains section is last, so a complete file always contains this marker.
+          if not String.contains?(data, "===END PRIVATE DOMAINS===") do
+            raise """
+            PublicSufx: the fetched data file is incomplete, refusing to compile with it.
+
+            Try again or change `download_data_on_compile` config to `false` to use the cached copy of the rules file.
+            """
+          end
+
           IO.puts("PublicSufx: fetched fresh data file for compilation.")
           String.split(data, "\n")
 
@@ -29,9 +43,15 @@ defmodule PublicSufx do
       File.stream!(@data_file)
     end
 
-  %{icann: icann_rules, private: private_rules} = parse_rules(rules_line_stream)
+  %{icann: icann_rules, private: private_rules} = rules = parse_rules(rules_line_stream)
   @icann_rules icann_rules
   @private_rules private_rules
+
+  # No rule spans more labels than this, so only that many labels at the end of a domain can match.
+  @max_rule_labels max_rule_labels(rules)
+
+  # DNS names are at most 253 characters in ASCII form, which is about 1 KB in UTF-8 at worst.
+  @max_domain_bytes 4096
 
   @on_load :load_public_suffix_list
 
@@ -52,33 +72,28 @@ defmodule PublicSufx do
   @doc """
   Extracts the public suffix from the provided domain based on the publicsuffix.org rules.
 
+  Returns `nil` for invalid input, see the module documentation.
+
   ## Examples
 
       iex> public_suffix("foo.bar.com")
       "com"
       iex> public_suffix("foo.github.io")
       "github.io"
+      iex> public_suffix("Foo.GitHub.io.")
+      "github.io"
   """
   @spec public_suffix(String.t()) :: nil | String.t()
-  # Inputs with a leading dot should be treated as a special case.
-  # see https://github.com/publicsuffix/list/issues/208
-  def public_suffix("." <> _domain), do: nil
-
   def public_suffix(domain) when is_binary(domain) do
     domain
-    # "The domain...must be canonicalized in the normal way for hostnames - lower-case"
-    |> String.downcase()
-    # "A domain or rule can be split into a list of labels using the separator "." (dot)."
-    |> String.split(".")
-    |> extract_labels_using_rules()
-    |> case do
-      nil -> nil
-      labels -> Enum.join(labels, ".")
-    end
+    |> normalize()
+    |> normalized_public_suffix()
   end
 
   @doc """
   Returns true if the supplied domain is a public suffix based on the publicsuffix.org rules, false otherwise.
+
+  Returns `false` for invalid input, see the module documentation.
 
   ## Examples
 
@@ -90,17 +105,20 @@ defmodule PublicSufx do
       false
       iex> public_suffix?("github.io")
       true
+      iex> public_suffix?("GitHub.io.")
+      true
   """
   @spec public_suffix?(String.t()) :: boolean()
-  def public_suffix?(domain) do
-    domain == public_suffix(domain)
+  def public_suffix?(domain) when is_binary(domain) do
+    normalized = normalize(domain)
+    normalized != nil and normalized_public_suffix(normalized) == normalized
   end
 
   @doc """
   Parses the provided domain and returns the prevailing rule based on the
   publicsuffix.org rules. If no rules match, the prevailing rule is "*",
-  unless the provided domain has a leading dot, in which case the input is
-  invalid and the function returns `nil`.
+  unless the input is invalid (see the module documentation), in which case
+  the function returns `nil`.
 
   ## Examples
 
@@ -116,18 +134,59 @@ defmodule PublicSufx do
       "github.io"
   """
   @spec prevailing_rule(String.t()) :: nil | String.t()
-  def prevailing_rule(domain)
-  def prevailing_rule("." <> _domain), do: nil
-
   def prevailing_rule(domain) when is_binary(domain) do
-    domain
-    |> String.downcase()
-    |> String.split(".")
-    |> find_prevailing_rule()
-    |> case do
-      {:exception, rule} -> "!" <> Enum.join(rule, ".")
-      {:normal, rule} -> Enum.join(rule, ".")
+    case normalize(domain) do
+      nil ->
+        nil
+
+      normalized ->
+        normalized
+        |> labels()
+        |> find_prevailing_rule()
+        |> case do
+          {:exception, rule} -> "!" <> Enum.join(rule, ".")
+          {:normal, rule} -> Enum.join(rule, ".")
+        end
     end
+  end
+
+  # "The domain...must be canonicalized in the normal way for hostnames"
+  # Returns nil for input that can't be a valid domain.
+  defp normalize(domain) when byte_size(domain) > @max_domain_bytes, do: nil
+
+  defp normalize(domain) do
+    domain
+    # IDNA (UTS #46) treats these as label separators too
+    |> String.replace(["。", "．", "｡"], ".")
+    |> :unicode.characters_to_nfkc_binary()
+    |> case do
+      # Inputs with a leading dot should be treated as a special case.
+      # see https://github.com/publicsuffix/list/issues/208
+      "." <> _domain -> nil
+      # A trailing dot only marks the name as fully qualified
+      normalized when is_binary(normalized) -> normalized |> String.downcase() |> String.replace_suffix(".", "")
+      # Invalid UTF-8
+      _error -> nil
+    end
+  end
+
+  defp normalized_public_suffix(nil), do: nil
+
+  defp normalized_public_suffix(domain) do
+    domain
+    |> labels()
+    |> extract_labels_using_rules()
+    |> case do
+      nil -> nil
+      labels -> Enum.join(labels, ".")
+    end
+  end
+
+  # "A domain or rule can be split into a list of labels using the separator "." (dot)."
+  defp labels(domain) do
+    domain
+    |> String.split(".")
+    |> Enum.take(-@max_rule_labels)
   end
 
   defp extract_labels_using_rules(labels) do

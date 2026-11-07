@@ -69,6 +69,62 @@ defmodule PublicSufx.PublicSufxTest do
     assert roundtrip_through_punycoding(normalized_form) == normalized_form
   end
 
+  describe "input normalization" do
+    test "case and a trailing dot don't change the result" do
+      assert public_suffix?("GITHUB.IO")
+      assert public_suffix?("github.io.")
+      refute public_suffix?("FOO.GITHUB.IO.")
+      assert public_suffix("foo.github.io.") == "github.io"
+      assert prevailing_rule("Foo.GitHub.IO.") == "github.io"
+    end
+
+    test "IDNA dot variants separate labels" do
+      refute public_suffix?("foo。github。io")
+      assert public_suffix?("pvt。k12.ma.us")
+      assert public_suffix("foo．github｡io") == "github.io"
+      assert prevailing_rule("foo。github.io") == "github.io"
+    end
+
+    test "unicode input is NFKC normalized" do
+      assert public_suffix?(:unicode.characters_to_nfd_binary("aéroport.ci"))
+      # fullwidth "github"
+      assert public_suffix?("ｇｉｔｈｕｂ.io")
+    end
+
+    test "invalid input" do
+      for domain <- [".com", "。com", <<0xFF, ".com">>] do
+        assert public_suffix(domain) == nil
+        assert prevailing_rule(domain) == nil
+        refute public_suffix?(domain)
+      end
+    end
+  end
+
+  describe "long input" do
+    test "over 4096 bytes is invalid" do
+      domain = String.duplicate("a.", 2047) <> "com"
+      assert byte_size(domain) == 4097
+      assert public_suffix(domain) == nil
+      assert prevailing_rule(domain) == nil
+      refute public_suffix?(domain)
+    end
+
+    test "up to 4096 bytes is matched normally" do
+      prefix = String.duplicate("a.", 2030)
+      assert byte_size(prefix <> "foo.bar.elb.amazonaws.com") <= 4096
+      assert public_suffix(prefix <> "b.c.kobe.jp") == "c.kobe.jp"
+      assert public_suffix(prefix <> "www.city.kobe.jp") == "kobe.jp"
+      assert prevailing_rule(prefix <> "foo.bar.elb.amazonaws.com") == "*.elb.amazonaws.com"
+    end
+  end
+
+  test "wildcard rules don't add rules with a literal `*` label" do
+    assert %{icann: icann_rules} =
+             PublicSufx.RulesParser.parse_rules(["// ===BEGIN ICANN DOMAINS===", "*.ck"])
+
+    assert icann_rules == %{wildcard: [["ck"]]}
+  end
+
   defp roundtrip_through_punycoding(domain) do
     domain
     |> PublicSufx.RulesParser.punycode_domain()
