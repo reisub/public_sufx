@@ -9,14 +9,14 @@ git config user.name "$GITHUB_ACTOR"
 git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 git checkout outdated || git checkout -b outdated
 
-current_version=$(mix run -e "IO.puts(PublicSufx.Mixfile.project()[:version])")
+current_version=$(.github/workflows/version.sh)
 
-mix public_sufx.sync_files
+.github/workflows/sync_files.sh
 
-new_version=$(mix run -e "IO.puts(PublicSufx.Mixfile.project()[:version])")
+new_version=$(.github/workflows/version.sh)
 
 if [ "$new_version" != "$current_version" ]; then
-  git add .
+  git add data/
   git commit -m "Update public suffix list"
   git push --force --set-upstream origin outdated
 
