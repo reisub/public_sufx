@@ -6,7 +6,7 @@ Releases that update only the public suffix list won't be listed in the changelo
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.8.20261106] - 2026-11-07
 
 ### Fixed
 
@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - OTP 26 is now the minimum supported version
+- Updated the bundled public suffix list
 - A trailing dot is ignored: `public_suffix("foo.github.io.")` returns `"github.io"` instead of `""`
 - Inputs longer than 4096 bytes or with invalid UTF-8 are invalid: `public_suffix/1` and `prevailing_rule/1` return `nil` and `public_suffix?/1` returns `false`
 
