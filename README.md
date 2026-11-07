@@ -77,7 +77,7 @@ def deps do
 end
 ```
 
-`PublicSufx` requires Elixir 1.15 or later and OTP 25 or later.
+`PublicSufx` requires Elixir 1.15 or later and OTP 26 or later.
 
 ## Configuration
 
