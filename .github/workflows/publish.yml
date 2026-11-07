@@ -37,6 +37,9 @@ jobs:
     needs: check
     if: ${{ needs.check.outputs.publish == 'true' }}
     runs-on: ubuntu-latest
+    # Waits for approval if hex.pm stages the release (staged releases expire after 7 days).
+    # If this times out, approve the release on hex.pm and re-run the workflow to tag it.
+    timeout-minutes: 120
     environment: publish
     permissions:
       contents: read
@@ -59,13 +62,17 @@ jobs:
       - name: Publish
         run: |
           mix deps.get --only docs
-          mix hex.publish --yes
+          mix hex.publish --yes --wait
+        env:
+          # --wait tries to open the approval URL in a browser; don't launch anything
+          BROWSER: "true"
 
   tag:
     name: Tag release
     needs: [check, publish]
-    # Also runs when the version is already published but not tagged yet.
-    if: ${{ !cancelled() && needs.check.outputs.tag == 'true' && needs.publish.result != 'failure' }}
+    # Also runs when the version is already published but not tagged yet, never after
+    # a failed, rejected, expired or timed-out publish.
+    if: ${{ !cancelled() && needs.check.outputs.tag == 'true' && (needs.publish.result == 'success' || needs.publish.result == 'skipped') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write # create the release tag
