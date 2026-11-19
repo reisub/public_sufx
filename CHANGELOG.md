@@ -6,11 +6,15 @@ Releases that update only the public suffix list won't be listed in the changelo
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.8.20261117] - 2026-11-19
 
 ### Security
 
 - Require idna 8.0, which rejects over-long domain labels right away; before, a single long label could keep the CPU busy for seconds or minutes. public_sufx only passes the bundled public suffix list to idna at compile time, but depending on it no longer holds a project's idna at an affected version
+
+### Changed
+
+- Updated the bundled public suffix list
 
 ## [0.8.20261106] - 2026-11-07
 
