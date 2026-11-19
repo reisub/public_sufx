@@ -30,7 +30,7 @@ defmodule PublicSufx.Mixfile do
 
   defp deps do
     [
-      {:idna, "~> 7.1"},
+      {:idna, "~> 7.1 or ~> 8.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:doctor, "~> 0.23.0", only: [:dev, :test]},
       # The publish workflow uses the docs environment to compile only what it needs
